@@ -1,24 +1,45 @@
-chrome.action.onClicked.addListener(async (tab) => {
+async function moveTab(tab, direction) {
   const windowId = tab.windowId;
 
   // Если вкладка не в группе
   if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
-    // Перемещаем в самое начало окна (индекс 0)
-    await chrome.tabs.move(tab.id, { index: 0 });
+    if (direction === 'start') {
+      await chrome.tabs.move(tab.id, { index: 0 });
+    } else {
+      // Перемещаем в самый конец (индекс -1 автоматически ставит вкладку последней)
+      await chrome.tabs.move(tab.id, { index: -1 });
+    }
   } 
   else {
-    // Если вкладка в группе, нужно найти индекс первой вкладки в этой группе
+    // Если вкладка в группе
     const allTabsInWindow = await chrome.tabs.query({ windowId: windowId });
-    
-    // Фильтруем вкладки, принадлежащие той же группе
     const groupTabs = allTabsInWindow
       .filter(t => t.groupId === tab.groupId)
       .sort((a, b) => a.index - b.index);
 
     if (groupTabs.length > 0) {
-      const firstIndexInGroup = groupTabs[0].index;
-      // Перемещаем текущую вкладку на позицию самой первой вкладки группы
-      await chrome.tabs.move(tab.id, { index: firstIndexInGroup });
+      const targetIndex = direction === 'start' 
+        ? groupTabs[0].index 
+        : groupTabs[groupTabs.length - 1].index;
+      
+      await chrome.tabs.move(tab.id, { index: targetIndex });
     }
+  }
+}
+
+// Слушатель нажатия на иконку расширения (по умолчанию в начало)
+chrome.action.onClicked.addListener((tab) => {
+  moveTab(tab, 'start');
+});
+
+// Слушатель горячих клавиш
+chrome.commands.onCommand.addListener(async (command) => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return;
+
+  if (command === 'move-to-start') {
+    moveTab(tab, 'start');
+  } else if (command === 'move-to-end') {
+    moveTab(tab, 'end');
   }
 });

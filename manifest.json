@@ -1,16 +1,32 @@
 {
   "manifest_version": 3,
-  "name": "Move Tab to Start",
-  "version": "1.0",
-  "description": "Перемещает активную вкладку в начало группы или в начало списка.",
+  "name": "Move Tab Start/End",
+  "version": "1.1",
+  "description": "Перемещает вкладку в начало или конец списка/группы горячими клавишами.",
   "permissions": ["tabs", "tabGroups"],
   "action": {
-    "default_title": "Переместить вкладку"
+    "default_title": "Переместить в начало"
   },
   "icons": {
     "128": "icon.png"
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "commands": {
+    "move-to-start": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Left",
+        "mac": "Command+Left"
+      },
+      "description": "Переместить вкладку в начало"
+    },
+    "move-to-end": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Right",
+        "mac": "Command+Right"
+      },
+      "description": "Переместить вкладку в конец"
+    }
   }
 }
